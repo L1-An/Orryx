@@ -2,9 +2,8 @@ import io.izzel.taboolib.gradle.*
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val publishUsername: String by project
-val publishPassword: String by project
-val build: String by project
+//val publishUsername: String by project
+//val publishPassword: String by project
 
 plugins {
     java
@@ -124,7 +123,7 @@ tasks.withType<JavaCompile> {
 }
 
 tasks.withType<Jar> {
-    destinationDirectory.set(File(build))
+    destinationDirectory.set(file("$projectDir/build-jar"))
 }
 
 tasks.withType<KotlinCompile> {
@@ -148,25 +147,25 @@ kotlin {
 }
 
 publishing {
-    repositories {
-        maven {
-            url = uri("https://www.mcwar.cn/nexus/repository/maven-releases/")
-            credentials {
-                username = publishUsername
-                password = publishPassword
-            }
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
-        }
-    }
+//    repositories {
+//        maven {
+//            url = uri("https://www.mcwar.cn/nexus/repository/maven-releases/")
+//            credentials {
+//                username = publishUsername
+//                password = publishPassword
+//            }
+//            authentication {
+//                create<BasicAuthentication>("basic")
+//            }
+//        }
+//    }
     publications {
         create<MavenPublication>("library") {
             from(components["java"])
             artifact(tasks["kotlinSourcesJar"]) {
                 classifier = "sources"
             }
-            artifact("${build}/${rootProject.name}-${version}-api.jar") {
+            artifact("${rootProject.name}-${version}-api.jar") {
                 classifier = "api"
             }
             groupId = project.group.toString()
@@ -176,7 +175,7 @@ publishing {
 
 tasks.dokkaHtml {
     // 配置输出目录
-    outputDirectory.set(file("${build}/${rootProject.name}-${version}-doc"))
+    outputDirectory.set(file("$projectDir/doc"))
     // 配置模块名称
     moduleName.set("Orryx")
     // 禁用自动生成文档链接
@@ -210,4 +209,17 @@ tasks.dokkaHtml {
             }
         }
     }
+}
+
+tasks.register<Copy>("copyPlugin") {
+    dependsOn("jar")
+    from(tasks.jar.get())
+    into("/Users/yuxin/minecraft/servers/1.20.4Test/plugins")
+}
+
+tasks.register<JavaExec>("startServer1.20.4") {
+    dependsOn("copyPlugin")
+    workingDir("/Users/yuxin/minecraft/servers/1.20.4Test")
+    classpath("/Users/yuxin/minecraft/servers/1.20.4Test/paper-1.20.4-497.jar")
+    args("--nogui")
 }

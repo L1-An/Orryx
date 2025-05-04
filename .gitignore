@@ -2,3 +2,5 @@
 .idea
 build
 build.gradle.kts
+/build-jar
+.DS_Store
